@@ -41,6 +41,18 @@ app.get('/api/articles', (req, res) => {
   res.status(200).json({ total: articles.length, articles });
 });
 
+// Create a new article object with a unique ID and add it to the articles array.
+app.get('/api/articles/:id', (req, res) => {
+  const articleId = parseInt(req.params.id, 10);
+  const article = articles.find((a) => a.id === articleId);
+
+  if (!article) {
+    return res.status(404).json({ error: `Article ${articleId} not found.` });
+  }
+
+  return res.status(200).json(article);
+});
+
 app.post('/api/articles', (req, res) => {
   const { title, author = 'Anonymous' } = req.body ?? {};
 
