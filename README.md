@@ -1,6 +1,6 @@
-# MERN Week 1 Express API
+# MERN Week 2 Express API with MongoDB
 
-Express REST API and JavaScript exercises for the MERN Stack Course Week 1 lab.
+Express REST API and JavaScript exercises for the MERN Stack Course Week 2 lab.
 
 ## Run locally
 
@@ -17,12 +17,19 @@ The API listens on `http://localhost:3000` by default. Set `PORT` in your enviro
 | --- | --- | --- |
 | GET | `/` | HTML health check |
 | GET | `/about` | Application, course, and API version metadata |
-| GET | `/api/articles` | Article count and in-memory articles |
-| POST | `/api/articles` | Creates an article (201); title is required |
-| GET | `/api/users` | Count and mock student users |
+| GET | `/api/articles` | Article count and articles from MongoDB |
+| POST | `/api/articles` | Creates an article (201); title and content are required |
+| GET | `/api/articles/:id` | Returns a specific article by ID |
+| PUT | `/api/articles/:id` | Updates a specific article by ID |
+| DELETE | `/api/articles/:id` | Deletes a specific article by ID |
+| GET | `/api/users` | User count and users from MongoDB |
+| POST | `/api/users` | Creates a user (201); name and email are required |
+| GET | `/api/users/:id` | Returns a specific user by ID |
+| PUT | `/api/users/:id` | Updates a specific user by ID |
+| DELETE | `/api/users/:id` | Deletes a specific user by ID |
 | POST | `/contact` | Confirms `{ "email": "...", "message": "..." }` (200); either missing field returns 400 |
 
-Data is held in memory for the lab and resets whenever the server restarts. Import [`postman/MERN-Week-1.postman_collection.json`](postman/MERN-Week-1.postman_collection.json) into Postman to send the endpoint requests, including a contact validation case that expects 400.
+Data is persisted in MongoDB and survives server restarts. Import [`postman/MERN-Week-1.postman_collection.json`](postman/MERN-Week-1.postman_collection.json) into Postman to send the endpoint requests, including a contact validation case that expects 400.
 
 ## JavaScript practice
 
@@ -36,4 +43,11 @@ Run `node exercices_js.js` to see destructuring with a default, an immutable arr
 
 ## Project structure
 
-`server.js` is the application entry point. The guide’s Week 1 API uses a small in-memory model so the request flow is easy to follow; future database-backed work can move handlers into `controllers/`, schemas into `models/`, endpoint definitions into `routes/`, and shared request processing into `middlewares/`.
+Following MVC pattern for better organization:
+- `server.js` is the application entry point and middleware configuration
+- `controllers/` contains request handler logic (`articlesController.js`, `usersController.js`)
+- `models/` contains database schemas (currently using placeholder `.gitkeep`; schemas are defined in controller files for simplicity in this lab)
+- `routes/` contains route definitions (`articles.js`, `users.js`)
+- `middlewares/` contains shared request processing (currently placeholder `.gitkeep`)
+
+Note: For a production application, database schemas would be defined in separate files in `models/` and imported by controllers.

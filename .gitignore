@@ -3,10 +3,5 @@ node_modules/
 npm-debug.log*
 .DS_Store
 
-# Project folders excluded from Git
-/controllers/
-/middleares/
-/middlewares/
-/models/
+
 /postman/
-/routes/

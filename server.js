@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 require("dotenv").config();
 
 const app = express();
@@ -13,70 +14,37 @@ app.use((req, res, next) => {
   next();
 });
 
-// In-memory data for the Week 1 demonstrations; it resets when the server restarts.
-const articles = [
-  { id: 1, title: 'Introduction to MERN Stack', author: 'Admin' },
-  { id: 2, title: 'Mastering Asynchronous Node.js', author: 'Admin' },
-];
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mernblog', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch(err => console.error('MongoDB connection error:', err));
 
-const users = [
-  { id: 1, name: 'Youssef', email: 'youssef@example.com', role: 'student' },
-  { id: 2, name: 'Aya', email: 'aya@example.com', role: 'student' },
-  { id: 3, name: 'Karim', email: 'karim@example.com', role: 'student' },
-];
+// Import routes
+const articlesRoutes = require('./routes/articles');
+const usersRoutes = require('./routes/users');
 
+// Use routes
+app.use('/api/articles', articlesRoutes);
+app.use('/api/users', usersRoutes);
+
+// Root endpoint
 app.get('/', (req, res) => {
   res.status(200).send('<h1>MERN Blog API is operational</h1>');
 });
 
+// About endpoint
 app.get('/about', (req, res) => {
   res.status(200).json({
     application: 'MERN Blog API',
-    course: 'MERN Stack Course - Week 1: Back-End Foundations & Modern JavaScript',
+    course: 'MERN Stack Course - Week 2: MongoDB & MVC Structure',
     version: '1.0.0',
   });
 });
 
-app.get('/api/articles', (req, res) => {
-  res.status(200).json({ total: articles.length, articles });
-});
-
-// Create a new article object with a unique ID and add it to the articles array.
-app.get('/api/articles/:id', (req, res) => {
-  const articleId = parseInt(req.params.id, 10);
-  const article = articles.find((a) => a.id === articleId);
-
-  if (!article) {
-    return res.status(404).json({ error: `Article ${articleId} not found.` });
-  }
-
-  return res.status(200).json(article);
-});
-
-app.post('/api/articles', (req, res) => {
-  const { title, author = 'Anonymous' } = req.body ?? {};
-
-  if (typeof title !== 'string' || !title.trim()) {
-    return res.status(400).json({ error: 'The title field is mandatory.' });
-  }
-
-  const newArticle = {
-    id: Date.now(),
-    title: title.trim(),
-    author: typeof author === 'string' && author.trim() ? author.trim() : 'Anonymous',
-  };
-  articles.push(newArticle);
-
-  return res.status(201).json({
-    message: 'Article created successfully!',
-    article: newArticle,
-  });
-});
-
-app.get('/api/users', (req, res) => {
-  res.status(200).json({ total: users.length, users });
-});
-
+// Contact endpoint
 app.post('/contact', (req, res) => {
   const { email, message } = req.body ?? {};
 
