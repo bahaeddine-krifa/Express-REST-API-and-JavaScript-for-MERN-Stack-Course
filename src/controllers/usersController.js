@@ -4,6 +4,7 @@ const { estNonVide, estEmailValide } = require('../utils/validators');
 // Get all users
 exports.getAllUsers = async (req, res) => {
   try {
+    console.log('Fetching all users');
     const users = await User.find();
     res.status(200).json({ total: users.length, users });
   } catch (error) {
@@ -27,8 +28,10 @@ exports.getUserById = async (req, res) => {
 // Create new user
 exports.createUser = async (req, res) => {
   try {
+    console.log('Request body:', req.body);
+    console.log('Received age:', req.body.age);
     // Use our custom validation utilities
-    const { name, email, role } = req.body;
+    const { name, email, age, role } = req.body;
 
     // Validate name is not empty
     if (!estNonVide(name)) {
@@ -43,13 +46,14 @@ exports.createUser = async (req, res) => {
     const newUser = new User({
       name: name.trim(),
       email: email.trim().toLowerCase(),
-      role: role || 'student',
+      age: age !== undefined ? Number(age) : undefined,
+      role: role || 'student'
     });
 
     const savedUser = await newUser.save();
     res.status(201).json({
       message: 'User created successfully!',
-      user: savedUser.getProfile() // Use instance method to get safe profile
+      user: savedUser // Return the user object directly instead of using getProfile
     });
   } catch (error) {
     // Handle Mongoose validation errors
@@ -70,7 +74,7 @@ exports.createUser = async (req, res) => {
 // Update user by ID
 exports.updateUser = async (req, res) => {
   try {
-    const { name, email, role } = req.body;
+    const { name, email, age, role } = req.body;
     const updateData = {};
 
     if (name !== undefined) {
@@ -91,6 +95,10 @@ exports.updateUser = async (req, res) => {
       updateData.role = role;
     }
 
+    if (age !== undefined) {
+      updateData.age = Number(age);
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
       updateData,
@@ -103,7 +111,7 @@ exports.updateUser = async (req, res) => {
 
     res.status(200).json({
       message: 'User updated successfully!',
-      user: updatedUser.getProfile() // Use instance method to get safe profile
+      user: updatedUser // Return the user object directly instead of using getProfile
     });
   } catch (error) {
     // Handle Mongoose validation errors
