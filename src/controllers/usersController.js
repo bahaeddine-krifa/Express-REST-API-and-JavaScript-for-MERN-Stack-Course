@@ -27,6 +27,7 @@ exports.getUserById = async (req, res) => {
 // Create new user
 exports.createUser = async (req, res) => {
   try {
+    // Use our custom validation utilities
     const { name, email, role } = req.body;
 
     // Validate name is not empty
@@ -48,14 +49,21 @@ exports.createUser = async (req, res) => {
     const savedUser = await newUser.save();
     res.status(201).json({
       message: 'User created successfully!',
-      user: savedUser,
+      user: savedUser.getProfile() // Use instance method to get safe profile
     });
   } catch (error) {
-    if (error.code === 11000) {
-      res.status(400).json({ error: 'Email already exists' });
-    } else {
-      res.status(400).json({ error: error.message });
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ error: messages.join(', ') });
     }
+
+    // Handle duplicate key error
+    if (error.code === 11000) {
+      return res.status(400).json({ error: 'Email already exists' });
+    }
+
+    res.status(500).json({ error: 'Failed to create user' });
   }
 };
 
@@ -95,14 +103,21 @@ exports.updateUser = async (req, res) => {
 
     res.status(200).json({
       message: 'User updated successfully!',
-      user: updatedUser
+      user: updatedUser.getProfile() // Use instance method to get safe profile
     });
   } catch (error) {
-    if (error.code === 11000) {
-      res.status(400).json({ error: 'Email already exists' });
-    } else {
-      res.status(400).json({ error: error.message });
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ error: messages.join(', ') });
     }
+
+    // Handle duplicate key error
+    if (error.code === 11000) {
+      return res.status(400).json({ error: 'Email already exists' });
+    }
+
+    res.status(500).json({ error: 'Failed to update user' });
   }
 };
 
