@@ -28,14 +28,6 @@ exports.createArticle = async (req, res) => {
   try {
     const { title, author = 'Anonymous', content } = req.body;
 
-    if (!title || !title.trim()) {
-      return res.status(400).json({ error: 'The title field is mandatory.' });
-    }
-
-    if (!content || !content.trim()) {
-      return res.status(400).json({ error: 'The content field is mandatory.' });
-    }
-
     const newArticle = new Article({
       title: title.trim(),
       author: typeof author === 'string' && author.trim() ? author.trim() : 'Anonymous',
@@ -45,10 +37,21 @@ exports.createArticle = async (req, res) => {
     const savedArticle = await newArticle.save();
     res.status(201).json({
       message: 'Article created successfully!',
-      article: savedArticle,
+      article: savedArticle
     });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ error: messages.join(', ') });
+    }
+
+    // Handle duplicate key error (though we don't have unique fields on Article)
+    if (error.code === 11000) {
+      return res.status(400).json({ error: 'Duplicate key error' });
+    }
+
+    res.status(500).json({ error: 'Failed to create article' });
   }
 };
 
@@ -59,9 +62,6 @@ exports.updateArticle = async (req, res) => {
     const updateData = {};
 
     if (title !== undefined) {
-      if (!title || !title.trim()) {
-        return res.status(400).json({ error: 'Title cannot be empty' });
-      }
       updateData.title = title.trim();
     }
 
@@ -70,13 +70,8 @@ exports.updateArticle = async (req, res) => {
     }
 
     if (content !== undefined) {
-      if (!content || !content.trim()) {
-        return res.status(400).json({ error: 'Content cannot be empty' });
-      }
       updateData.content = content.trim();
     }
-
-    updateData.updatedAt = Date.now();
 
     const updatedArticle = await Article.findByIdAndUpdate(
       req.params.id,
@@ -93,7 +88,13 @@ exports.updateArticle = async (req, res) => {
       article: updatedArticle
     });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ error: messages.join(', ') });
+    }
+
+    res.status(500).json({ error: 'Failed to update article' });
   }
 };
 

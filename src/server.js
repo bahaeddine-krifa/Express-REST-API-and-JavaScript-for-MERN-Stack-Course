@@ -1,9 +1,12 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const connectDB = require('./config/db');
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Connect to MongoDB
+connectDB();
 
 // Parse JSON request bodies before route handlers access req.body.
 app.use(express.json());
@@ -13,14 +16,6 @@ app.use((req, res, next) => {
   console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.originalUrl}`);
   next();
 });
-
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mernblog', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('MongoDB connection error:', err));
 
 // Import routes
 const articlesRoutes = require('./routes/articles');
@@ -39,7 +34,7 @@ app.get('/', (req, res) => {
 app.get('/about', (req, res) => {
   res.status(200).json({
     application: 'MERN Blog API',
-    course: 'MERN Stack Course - Week 2: MongoDB & MVC Structure',
+    course: 'MERN Stack Course - Week 3: MongoDB Atlas & Mongoose ODM',
     version: '1.0.0',
   });
 });
