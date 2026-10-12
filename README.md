@@ -31,7 +31,7 @@ MONGODB_URI=mongodb+srv://admin_mern:PolyMern2026!@cluster0.ncsayub.mongodb.net/
 | PUT | `/api/articles/:id` | Updates a specific article by ID |
 | DELETE | `/api/articles/:id` | Deletes a specific article by ID |
 | GET | `/api/users` | User count and users from MongoDB Atlas |
-| POST | `/api/users` | Creates a user (201); name and email are required |
+| POST | `/api/users` | Creates a user (201); name, email, and age are required |
 | GET | `/api/users/:id` | Returns a specific user by ID |
 | PUT | `/api/users/:id` | Updates a specific user by ID |
 | DELETE | `/api/users/:id` | Deletes a specific user by ID |
@@ -66,11 +66,12 @@ Following MVC pattern with enhanced MongoDB Atlas integration, Mongoose ODM feat
     - Virtuals: excerpt (first 100 chars)
     - Validation: Built-in Mongoose validators with custom messages
   - `src/models/User.js`:
-    - Fields: name (required, validated), email (required, unique, validated format), role (enum: student/admin/moderator)
+    - Fields: name (required, validated), email (required, unique, validated format), role (enum: student/admin/moderator), age (number, min: 4, max: 120)
     - Timestamps: createdAt, updatedAt
     - Indexes: email (for lookups)
     - Instance methods: getProfile() (returns safe user data)
     - Static methods: findByRole(role) (finds users by role)
+    - Static methods: findByAgeRange(minAge, maxAge) (finds users within age range)
     - Validation: Built-in Mongoose validators with custom messages and regex email validation
 - `src/routes/` contains route definitions mapping URLs to controller functions:
   - `src/routes/articles.js`: RESTful routes for `/api/articles`
@@ -81,7 +82,7 @@ Following MVC pattern with enhanced MongoDB Atlas integration, Mongoose ODM feat
 
 ### Key ODM Features Implemented
 1. **Schema Validation**: Mongoose built-in validators with custom error messages
-2. **Data Types**: Proper use of String, Date types with constraints
+2. **Data Types**: Proper use of String, Date, Number types with constraints
 3. **Indexes**: Performance optimization for queries
 4. **Timestamps**: Automatic createdAt/updatedAt tracking
 5. **Virtuals**: Computed properties not stored in DB
@@ -98,5 +99,3 @@ Following MVC pattern with enhanced MongoDB Atlas integration, Mongoose ODM feat
 - Indexes improve query performance for common operations
 - Timestamps provide audit trail for when documents were created/modified
 - Virtuals and methods provide clean abstraction layers
-
-This implementation demonstrates professional MongoDB Atlas usage with Mongoose ODM following best practices for data validation, performance, maintainability, and configuration separation.

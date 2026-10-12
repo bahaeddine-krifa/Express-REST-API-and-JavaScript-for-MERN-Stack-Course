@@ -16,6 +16,12 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
     },
+    age: {
+      type: Number,
+      min: [4, 'Minimum age is 4 years old'],
+      max: [120, 'Maximum age is 120 years old'],
+      default: null
+    },
     role: {
       type: String,
       enum: {
@@ -37,6 +43,7 @@ userSchema.methods.getProfile = function() {
     name: this.name,
     email: this.email,
     role: this.role,
+    age: this.age,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt
   };
@@ -45,6 +52,11 @@ userSchema.methods.getProfile = function() {
 // Static method to find users by role
 userSchema.statics.findByRole = function(role) {
   return this.find({ role });
+};
+
+// Static method to find users by age range
+userSchema.statics.findByAgeRange = function(minAge, maxAge) {
+  return this.find({ age: { $gte: minAge, $lte: maxAge } });
 };
 
 module.exports = mongoose.model('User', userSchema);
