@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const { estNonVide, estEmailValide } = require('../utils/validators');
 
 // Get all users
 exports.getAllUsers = async (req, res) => {
@@ -28,12 +29,14 @@ exports.createUser = async (req, res) => {
   try {
     const { name, email, role } = req.body;
 
-    if (!name || !name.trim()) {
-      return res.status(400).json({ error: 'Name is required' });
+    // Validate name is not empty
+    if (!estNonVide(name)) {
+      return res.status(400).json({ error: 'Name is required and cannot be empty' });
     }
 
-    if (!email || !email.trim()) {
-      return res.status(400).json({ error: 'Email is required' });
+    // Validate email format
+    if (!email || !estEmailValide(email)) {
+      return res.status(400).json({ error: 'Email is required and must be valid (contain @ and .)' });
     }
 
     const newUser = new User({
@@ -63,15 +66,15 @@ exports.updateUser = async (req, res) => {
     const updateData = {};
 
     if (name !== undefined) {
-      if (!name || !name.trim()) {
+      if (!estNonVide(name)) {
         return res.status(400).json({ error: 'Name cannot be empty' });
       }
       updateData.name = name.trim();
     }
 
     if (email !== undefined) {
-      if (!email || !email.trim()) {
-        return res.status(400).json({ error: 'Email cannot be empty' });
+      if (!email || !estEmailValide(email)) {
+        return res.status(400).json({ error: 'Email must be valid (contain @ and .)' });
       }
       updateData.email = email.trim().toLowerCase();
     }
