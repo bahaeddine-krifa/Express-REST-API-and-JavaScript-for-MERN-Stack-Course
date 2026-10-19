@@ -1,9 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const articlesController = require('../controllers/articlesController');
+const { protect } = require('../middlewares/auth');
 
 // GET all articles
 router.get('/', articlesController.getAllArticles);
+
+// GET my articles (protected)
+router.get('/my-articles', protect, articlesController.getMyArticles);
 
 // GET article by ID
 router.get('/:id', articlesController.getArticleById);

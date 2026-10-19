@@ -202,3 +202,39 @@ exports.updatePassword = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+// Update user role (admin only)
+exports.updateUserRole = async (req, res) => {
+  try {
+    const { role } = req.body;
+
+    // Validate role
+    if (!role || (role !== 'user' && role !== 'admin')) {
+      return res.status(400).json({ error: 'Role must be either "user" or "admin"' });
+    }
+
+    // Find user by ID
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Update role
+    user.role = role;
+    await user.save();
+
+    res.status(200).json({
+      message: `User role updated to ${role} successfully`,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
