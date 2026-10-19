@@ -39,13 +39,13 @@ exports.register = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password,salt);
-    // Create user
+    // Create user - force role to 'user' for public registration (privilege escalation defense)
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
       age,
-      role
+      role: 'user' // Always set to 'user' for public registration
     });
 
     if (user) {

@@ -30,11 +30,13 @@ MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.ncsayub.mongodb.net/blo
 | GET | `/api/articles/:id` | Returns a specific article by ID |
 | PUT | `/api/articles/:id` | Updates a specific article by ID |
 | DELETE | `/api/articles/:id` | Deletes a specific article by ID |
+| GET | `/api/articles/my-articles` | Returns authenticated user's articles (200) |
 | GET | `/api/users` | User count and users from MongoDB Atlas |
 | POST | `/api/users` | Creates a user (201); name, email, and age are required |
 | GET | `/api/users/:id` | Returns a specific user by ID |
 | PUT | `/api/users/:id` | Updates a specific user by ID |
 | DELETE | `/api/users/:id` | Deletes a specific user by ID |
+| PUT | `/api/users/:id/role` | Updates user role (admin only, 200); requires role: 'user' or 'admin' |
 | PUT | `/api/users/update-password` | Updates authenticated user's password (200); requires oldPassword and newPassword |
 | POST | `/api/auth/register` | Registers a new user (201); returns user data and JWT token |
 | POST | `/api/auth/login` | Authenticates user (200); returns user data and JWT token |

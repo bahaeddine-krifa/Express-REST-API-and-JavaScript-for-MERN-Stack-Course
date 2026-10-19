@@ -119,3 +119,13 @@ exports.deleteArticle = async (req, res) => {
     res.status(500).json({ error: 'Failed to delete article' });
   }
 };
+
+// Get my articles (protected)
+exports.getMyArticles = async (req, res) => {
+  try {
+    const articles = await Article.find({ author: req.user._id });
+    res.status(200).json({ total: articles.length, articles });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch articles' });
+  }
+};

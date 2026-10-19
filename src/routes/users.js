@@ -21,5 +21,7 @@ router.put('/:id', usersController.updateUser);
 // DELETE user by ID
 router.delete('/:id', usersController.deleteUser);
 
+// UPDATE user role (admin only)
+router.put('/:id/role', protect, authorize, usersController.updateUserRole);
 
 module.exports = router;
