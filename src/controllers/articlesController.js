@@ -26,15 +26,16 @@ exports.getArticleById = async (req, res) => {
 // Create new article
 exports.createArticle = async (req, res) => {
   try {
-    const { title, author = 'Anonymous', content } = req.body;
+    const { title, content } = req.body;
 
     if (!title || !content) {
       return res.status(400).json({ message: 'Title and content are required' });
     }
 
+    // Author is automatically set to the logged-in user's ID from the token
     const newArticle = new Article({
       title: title.trim(),
-      author: typeof author === 'string' && author.trim() ? author.trim() : 'Anonymous',
+      author: req.user._id.toString(), // Convert ObjectId to string
       content: content.trim()
     });
 
@@ -123,7 +124,7 @@ exports.deleteArticle = async (req, res) => {
 // Get my articles (protected)
 exports.getMyArticles = async (req, res) => {
   try {
-    const articles = await Article.find({ author: req.user._id });
+    const articles = await Article.find({ author: req.user._id.toString() });
     res.status(200).json({ total: articles.length, articles });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch articles' });

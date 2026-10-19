@@ -26,7 +26,7 @@ MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.ncsayub.mongodb.net/blo
 | GET | `/` | HTML health check |
 | GET | `/about` | Application, course, and API version metadata |
 | GET | `/api/articles` | Article count and articles from MongoDB Atlas |
-| POST | `/api/articles` | Creates an article (201); title and content are required |
+| POST | `/api/articles` | Creates an article (201, protected); title and content are required; author is set to logged-in user |
 | GET | `/api/articles/:id` | Returns a specific article by ID |
 | PUT | `/api/articles/:id` | Updates a specific article by ID |
 | DELETE | `/api/articles/:id` | Deletes a specific article by ID |
