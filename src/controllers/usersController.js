@@ -5,7 +5,7 @@ const { estNonVide, estEmailValide } = require('../utils/validators');
 exports.getAllUsers = async (req, res) => {
   try {
     console.log('Fetching all users');
-    const users = await User.find();
+    const users = await User.find().select('-password');
     res.status(200).json({ total: users.length, users });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch users' });
@@ -31,7 +31,7 @@ exports.createUser = async (req, res) => {
     console.log('Request body:', req.body);
     console.log('Received age:', req.body.age);
     // Use our custom validation utilities
-    const { name, email, age, role } = req.body;
+    const { name, email, password, age, role } = req.body;
 
     // Validate name is not empty
     if (!estNonVide(name)) {
@@ -43,17 +43,23 @@ exports.createUser = async (req, res) => {
       return res.status(400).json({ error: 'Email is required and must be valid (contain @ and .)' });
     }
 
+    // Validate password
+    if (!estNonVide(password) || password.length < 6) {
+      return res.status(400).json({ error: 'Password is required and must be at least 6 characters long' });
+    }
+
     const newUser = new User({
       name: name.trim(),
       email: email.trim().toLowerCase(),
+      password: password,
       age: age !== undefined ? Number(age) : undefined,
-      role: role || 'student'
+      role: role || 'user'
     });
 
     const savedUser = await newUser.save();
     res.status(201).json({
       message: 'User created successfully!',
-      user: savedUser // Return the user object directly instead of using getProfile
+      user: savedUser.getProfile() // Return the user profile without password
     });
   } catch (error) {
     // Handle Mongoose validation errors
@@ -74,7 +80,7 @@ exports.createUser = async (req, res) => {
 // Update user by ID
 exports.updateUser = async (req, res) => {
   try {
-    const { name, email, age, role } = req.body;
+    const { name, email, password, age, role } = req.body;
     const updateData = {};
 
     if (name !== undefined) {
@@ -89,6 +95,13 @@ exports.updateUser = async (req, res) => {
         return res.status(400).json({ error: 'Email must be valid (contain @ and .)' });
       }
       updateData.email = email.trim().toLowerCase();
+    }
+
+    if (password !== undefined) {
+      if (!estNonVide(password) || password.length < 6) {
+        return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+      }
+      updateData.password = password;
     }
 
     if (role !== undefined) {
@@ -111,7 +124,7 @@ exports.updateUser = async (req, res) => {
 
     res.status(200).json({
       message: 'User updated successfully!',
-      user: updatedUser // Return the user object directly instead of using getProfile
+      user: updatedUser.getProfile() // Return the user profile without password
     });
   } catch (error) {
     // Handle Mongoose validation errors

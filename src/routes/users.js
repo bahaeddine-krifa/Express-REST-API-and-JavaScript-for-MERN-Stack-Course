@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const usersController = require('../controllers/usersController');
+const { protect,authorize } = require('../middlewares/auth');
 
 // GET all users
-router.get('/', usersController.getAllUsers);
+router.get('/', protect, authorize, usersController.getAllUsers);
 
 // GET user by ID
 router.get('/:id', usersController.getUserById);

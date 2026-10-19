@@ -20,8 +20,10 @@ app.use((req, res, next) => {
 // Import routes
 const articlesRoutes = require('./routes/articles');
 const usersRoutes = require('./routes/users');
+const authRoutes = require('./routes/auth');
 
 // Use routes
+app.use('/api/auth', authRoutes);
 app.use('/api/articles', articlesRoutes);
 app.use('/api/users', usersRoutes);
 

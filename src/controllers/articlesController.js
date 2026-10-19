@@ -28,6 +28,10 @@ exports.createArticle = async (req, res) => {
   try {
     const { title, author = 'Anonymous', content } = req.body;
 
+    if (!title || !content) {
+      return res.status(400).json({ message: 'Title and content are required' });
+    }
+
     const newArticle = new Article({
       title: title.trim(),
       author: typeof author === 'string' && author.trim() ? author.trim() : 'Anonymous',

@@ -1,41 +1,71 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       required: [true, 'Name is required'],
-      trim: true,
-      maxlength: [50, 'Name cannot exceed 50 characters']
+      trim: true
     },
     email: {
       type: String,
       required: [true, 'Email is required'],
       unique: true,
-      trim: true,
       lowercase: true,
-      match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+      trim: true,
+      match: [/^\S+@\S+\.\S+$/, 'Invalid email format']
     },
-    age: {
-      type: Number,
-      min: [4, 'Minimum age is 4 years old'],
-      max: [120, 'Maximum age is 120 years old'],
-      default: null
+    password: {
+      type: String,
+      required: [true, 'Password is required'],
+      minlength: [6, 'Password must be at least 6 characters long']
     },
     role: {
       type: String,
       enum: {
-        values: ['student', 'admin', 'moderator'],
+        values: ['user', 'admin'],
         message: '{VALUE} is not a valid role'
       },
-      default: 'student'
+      default: 'user'
+    },
+    age: {
+      type: Number,
+      min: [4, 'Minimum allowed age is 4']
     }
   },
   {
-    timestamps: true, // adds createdAt and updatedAt
+    timestamps: true
   }
 );
+/*
+// Hash password before saving
+userSchema.pre('save', async function(next) {
+  // Only hash the password if it has been modified (or is new)
+  if (!this.isModified('password')) {
+    return next();
+  }
 
+  try {
+    const salt = await bcrypt.genSalt(12);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Compare password method
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  try {
+    const isMatch = await bcrypt.compare(candidatePassword, this.password);
+    return isMatch;
+  } catch (error) {
+    console.error('Error in comparePassword:', error);
+    return false;
+  }
+};
+*/
 // Instance method to get user profile (without sensitive data)
 userSchema.methods.getProfile = function() {
   return {
@@ -47,16 +77,6 @@ userSchema.methods.getProfile = function() {
     createdAt: this.createdAt,
     updatedAt: this.updatedAt
   };
-};
-
-// Static method to find users by role
-userSchema.statics.findByRole = function(role) {
-  return this.find({ role });
-};
-
-// Static method to find users by age range
-userSchema.statics.findByAgeRange = function(minAge, maxAge) {
-  return this.find({ age: { $gte: minAge, $lte: maxAge } });
 };
 
 module.exports = mongoose.model('User', userSchema);
