@@ -16,7 +16,7 @@ The API listens on `http://localhost:3000` by default. Set `PORT` in your enviro
 This project connects to MongoDB Atlas using a dedicated database configuration file (`src/config/db.js`) that reads the connection string from `.env`:
 
 ```
-MONGODB_URI=mongodb+srv://admin_mern:PolyMern2026!@cluster0.ncsayub.mongodb.net/blogDB?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.ncsayub.mongodb.net/blogDB?retryWrites=true&w=majority
 ```
 
 ## Endpoints
@@ -35,6 +35,11 @@ MONGODB_URI=mongodb+srv://admin_mern:PolyMern2026!@cluster0.ncsayub.mongodb.net/
 | GET | `/api/users/:id` | Returns a specific user by ID |
 | PUT | `/api/users/:id` | Updates a specific user by ID |
 | DELETE | `/api/users/:id` | Deletes a specific user by ID |
+| PUT | `/api/users/update-password` | Updates authenticated user's password (200); requires oldPassword and newPassword |
+| POST | `/api/auth/register` | Registers a new user (201); returns user data and JWT token |
+| POST | `/api/auth/login` | Authenticates user (200); returns user data and JWT token |
+| GET | `/api/auth/me` | Returns authenticated user profile (200) |
+| GET | `/api/auth/logout` | Logs out user (200) |
 | POST | `/contact` | Confirms `{ "email": "...", "message": "..." }` (200); either missing field returns 400 |
 
 Data is persisted in MongoDB Atlas and survives server restarts. Import [`postman/MERN-Week-1.postman_collection.json`](postman/MERN-Week-1.postman_collection.json) into Postman to send the endpoint requests, including a contact validation case that expects 400.
@@ -57,7 +62,8 @@ Following MVC pattern with enhanced MongoDB Atlas integration, Mongoose ODM feat
 - `src/config/db.js` handles MongoDB Atlas connection (separated configuration as per PDF requirements)
 - `src/controllers/` contains request handler logic with validation utilities:
   - `src/controllers/articlesController.js`: CRUD operations for articles with Mongoose validation error handling
-  - `src/controllers/usersController.js`: CRUD operations for users with custom and Mongoose validation
+  - `src/controllers/usersController.js`: CRUD operations for users with custom validation
+  - `src/controllers/authController.js`: Authentication operations (register, login, profile, logout) with JWT token handling
 - `src/models/` contains enhanced MongoDB schemas with:
   - `src/models/Article.js`: 
     - Fields: title (required, validated), author (required, default), content (required), publishedAt (indexed)
@@ -66,31 +72,29 @@ Following MVC pattern with enhanced MongoDB Atlas integration, Mongoose ODM feat
     - Virtuals: excerpt (first 100 chars)
     - Validation: Built-in Mongoose validators with custom messages
   - `src/models/User.js`:
-    - Fields: name (required, validated), email (required, unique, validated format), role (enum: student/admin/moderator), age (number, min: 4, max: 120)
+    - Fields: name (required, validated), email (required, unique, validated format), role (enum: user/admin, default: user), age (number, min: 4)
     - Timestamps: createdAt, updatedAt
-    - Indexes: email (for lookups)
-    - Instance methods: getProfile() (returns safe user data)
-    - Static methods: findByRole(role) (finds users by role)
-    - Static methods: findByAgeRange(minAge, maxAge) (finds users within age range)
+    - Instance method: getProfile() (returns safe user data without password)
     - Validation: Built-in Mongoose validators with custom messages and regex email validation
 - `src/routes/` contains route definitions mapping URLs to controller functions:
   - `src/routes/articles.js`: RESTful routes for `/api/articles`
   - `src/routes/users.js`: RESTful routes for `/api/users`
+  - `src/routes/auth.js`: RESTful routes for `/api/auth`
 - `src/utils/` contains reusable validation utilities:
   - `src/utils/validators.js`: estNonVide() and estEmailValide() functions for controller-level validation
-- `src/middlewares/` contains shared request processing (placeholder for future enhancement)
+- `src/middlewares/auth.js`: Authentication middleware for protecting routes and authorizing user roles
 
 ### Key ODM Features Implemented
 1. **Schema Validation**: Mongoose built-in validators with custom error messages
 2. **Data Types**: Proper use of String, Date, Number types with constraints
 3. **Indexes**: Performance optimization for queries
 4. **Timestamps**: Automatic createdAt/updatedAt tracking
-5. **Virtuals**: Computed properties not stored in DB
-6. **Instance Methods**: Encapsulate document functionality
-7. **Static Methods**: Model-level utility functions
-8. **Error Handling**: Proper distinction between validation errors, duplicate keys, and server errors
-9. **Separated Configuration**: Database connection logic in `src/config/db.js` for modularity
-10. **Atlas Connection**: Production-ready MongoDB Atlas URI with connection options
+5. **Virtuals**: Computed properties not stored in DB (Article model only)
+6. **Instance Methods**: Encapsulate document functionality (User.getProfile())
+7. **Error Handling**: Proper distinction between validation errors, duplicate keys, and server errors
+8. **Separated Configuration**: Database connection logic in `src/config/db.js` for modularity
+9. **Atlas Connection**: Production-ready MongoDB Atlas URI with connection options
+10. **JWT Authentication**: Secure authentication using JSON Web Tokens with role-based claims
 
 ## Notes on Data Persistence and Configuration
 - All data is stored in MongoDB Atlas cluster (blogDB database)
@@ -99,3 +103,5 @@ Following MVC pattern with enhanced MongoDB Atlas integration, Mongoose ODM feat
 - Indexes improve query performance for common operations
 - Timestamps provide audit trail for when documents were created/modified
 - Virtuals and methods provide clean abstraction layers
+- Authentication uses JWT tokens with role-based authorization
+- Passwords are hashed using bcrypt before storage (in auth controller)
