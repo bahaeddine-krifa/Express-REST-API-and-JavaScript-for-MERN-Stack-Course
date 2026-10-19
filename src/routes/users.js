@@ -12,10 +12,14 @@ router.get('/:id', usersController.getUserById);
 // CREATE new user
 router.post('/', usersController.createUser);
 
+// UPDATE password (protected)
+router.put('/update-password', protect, usersController.updatePassword);
+
 // UPDATE user by ID
 router.put('/:id', usersController.updateUser);
 
 // DELETE user by ID
 router.delete('/:id', usersController.deleteUser);
+
 
 module.exports = router;

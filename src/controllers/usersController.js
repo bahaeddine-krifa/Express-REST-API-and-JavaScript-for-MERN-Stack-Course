@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const { estNonVide, estEmailValide } = require('../utils/validators');
+const bcrypt = require('bcryptjs');
 
 // Get all users
 exports.getAllUsers = async (req, res) => {
@@ -79,6 +80,7 @@ exports.createUser = async (req, res) => {
 
 // Update user by ID
 exports.updateUser = async (req, res) => {
+  console.log('Request body for update:', req.body);
   try {
     const { name, email, password, age, role } = req.body;
     const updateData = {};
@@ -157,5 +159,46 @@ exports.deleteUser = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete user' });
+  }
+};
+
+// Update password
+exports.updatePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    // Validate input
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ error: 'Please provide both old and new passwords' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+    }
+
+    // Get user from token (set by protect middleware)
+    const user = await User.findById(req.user.id).select('+password');
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Compare old password
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid old password' });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(12);
+    user.password = await bcrypt.hash(newPassword, salt);
+
+    // Save user
+    await user.save();
+
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
