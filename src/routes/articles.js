@@ -12,8 +12,8 @@ router.get('/my-articles', protect, articlesController.getMyArticles);
 // GET article by ID
 router.get('/:id', articlesController.getArticleById);
 
-// CREATE new article
-router.post('/', articlesController.createArticle);
+// CREATE new article (protected)
+router.post('/', protect, articlesController.createArticle);
 
 // UPDATE article by ID
 router.put('/:id', articlesController.updateArticle);
